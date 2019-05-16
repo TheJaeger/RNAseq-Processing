@@ -23,7 +23,7 @@ function corrMat = getCorrelation(xlsPath,varargin)
 %
 % Output:
 %--------
-% corrMat: 
+% corrMat:
 %
 % Author: Siddhartha Dhiman
 % Email: sdhiman@buffalo.edu & dhiman@musc.edu
@@ -62,6 +62,7 @@ if ~exist('outPath','var') || isempty(outPath)
 end
 
 %% Load Data File
+
 [num,txt,raw] = xlsread(xlsPath);
 [~,fn,~] = fileparts(xlsPath);
 
@@ -116,8 +117,10 @@ corrMat1 = corr(transpose(num(:,R1_S:R1_E)));
 corrMat2 = corr(transpose(num(:,R2_S:R2_E)));
 
 %  Convert correlation into vectors
+openParallel;
 corrMat1 = vectorize(corrMat1);
 corrMat2 = vectorize(corrMat2);
+closeParallel;
 
 %% Form Correlation Table
 tmp = [corrMat1 corrMat2(:,3)];
@@ -136,20 +139,40 @@ writetable(cell2table(corrMat),fullfile(outPath,strcat(fn,'.csv')),...
     'WriteVariableNames',false);
 disp(sprintf('File saved as %s',fullfile(outPath,strcat(fn,'.csv'))));
 
+%% Dependent Functions
     function vector = vectorize(corrMat)
         %  Convert correlation matrix to vector by extracting values above
         %  the upper triangle and vectorizing them.
         sz = length(corrMat);
-        cnt = 0;
-        vector = zeros(nchoosek(sz,2),3);
-        for i = 1:sz
-            for j = 1:sz
-                if i ~= j & j > i
+        vector = [];
+        parfor vi = 1:sz
+            cnt = 0;
+            tmp2 = [];
+            for vj = 1:sz
+                if vi ~= vj & vj > vi
                     cnt = cnt + 1;
-                    vector(cnt,:) = [i, j, corrMat(i,j)];
+                    tmp1 = [vi,vj,corrMat(vi,vj)];
+                    tmp2 = vertcat(tmp2,tmp1);
                 end
             end
+            vector = vertcat(vector,tmp2);
         end
     end  % vectorize end
+
+% Open Parallel Pool
+    function openParallel
+        %  Queries the maximum number of logical cores avaialble and opens
+        %  them for computation
+        numworkers = feature('numcores');
+        disp(sprintf('Parallel Processing: Found %d logical cores',numworkers));
+        parObj = parpool('local',numworkers);
+    end  % openParallel end
+
+%  Close Parallel Pool
+    function closeParallel
+        %  Closes any open parallel pools
+        parObj = gcp('nocreate');
+        delete(parObj);
+    end  % closeParallel end
 toc;
 end  % getCorrelation end
