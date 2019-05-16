@@ -145,7 +145,53 @@ fprintf('Writing CSV...');
 writetable(cell2table(corrMat),fullfile(savePath,strcat('corr-',fn,'.csv')),...
     'WriteVariableNames',false);
 fprintf('done\n');
-disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('corr'-fn,'.csv'))));
+disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('corr-',fn,'.csv'))));
+
+%% Plot Histograms
+%  Plotting colors
+c1 = [86,187,131]/255;   % condition 1 color
+c2 = [78,173,241]/255;   % condition 2 color
+c3 = [235,235,235]/255;  % background color
+
+%  Legend titles
+aLeg = strsplit(fn,'vs');
+
+figure; fig = gcf;
+
+set(fig,'Units','Normalized','OuterPosition',[0 0 1 1],...
+    'InvertHardcopy','off','Color','white','Visible','off');
+
+[nC1 eC1] = histcounts(cell2mat(corrMat(:,3)),64,...
+    'Normalization','Probability');
+[nC2 eC2] = histcounts(cell2mat(corrMat(:,4)),64,...
+    'Normalization','Probability');
+nC1 = smooth(nC1);
+nC2 = smooth(nC2);
+
+for k = 1:length(nC1)
+    mC1(k) = median([eC1(k) eC1(k+1)]);
+end
+for k = 1:length(nC2)
+    mC2(k) = median([eC2(k) eC2(k+1)]);
+end
+hold on;
+c1Area = area(mC1,nC1,...
+    'EdgeColor',c1,'LineWidth',3,...
+    'FaceColor',c1,'FaceAlpha',0.55);
+c2Area = area(mC2,nC2,...
+    'EdgeColor',c2,'LineWidth',3,...
+    'FaceColor',c2,'FaceAlpha',0.55);
+hold off;
+title(sprintf('Histogram of %s Correlations',fn))
+xlabel('Correlation');
+ylabel('% of Correlations');
+grid on; box on; axis tight;
+ax = gca;
+        set(ax,'Color',c3,...
+            'GridColor','white','GridAlpha',1,'MinorGridAlpha',0.15,...
+            'fontname','helvetica','FontWeight','bold','fontsize',14);
+legend(aLeg,'Location','north');
+print(fullfile(savePath,['histo-',fn]),'-dpng','-r300');
 
 %% Dependent Functions
     function vector = vectorize(corrMat)
