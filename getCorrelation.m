@@ -1,26 +1,48 @@
-function corrMat = getCorrelation(xlsPath,R,outPath)
+function corrMat = getCorrelation(xlsPath,varargin)
 % getCorrelation computes correlation of all possible gene pairs in an
-% excel sheet containing RNA sequence triplicates
+% Excel sheet containing RNA sequence triplicates
 %--------------------------------------------------------------------------
 %
 % Usage:
 %-------
-% corrMat = corrMat(path_to_xls)
+% corrMat = corrMat(xlsPath,R,outPath)
 %
 % Required input:
 %----------------
 % 1. xlsPath: path to Excel sheet
-%    [Gene C_1 C_2 R1_1 R1_2 R1_3 R2_1 R2_2 R2_3],
+%    [Gene C_1, C_2, R1_1, R1_2, R1_3, R2_1, R2_2, R2_3],
 %     where C --> condition,
 %     Ri_N --> RNAseq observation N, N = 1:3 for triplicates
 %
 % Optional input:
 %----------------
-% 2. T: number of observations per gene (default: 3 for triplicates)
+% 2. R: number of observations per gene (default: 3 for triplicates)
+%
+% 3. outPath: output directory to save CSV of pairwise correlations
+%             (defaults: current working directory; same name as input file)
+%
+% Output:
+%--------
+% corrMat: 
 %
 % Author: Siddhartha Dhiman
 % Email: sdhiman@buffalo.edu & dhiman@musc.edu
 % Created with MATLAB 2019a
+
+%% Parse Inputs
+tic;
+defaultR = 3;
+defaultOut = pwd;
+
+p = inputParser;
+p.addRequired('xlsPath',@isstr);
+p.addOptional('R',defaultR,@(x) rem(x,1)==0);
+p.addOptional('outPath',defaultOut,@isstr);
+
+parse(p,xlsPath,varargin{:});
+
+R = p.Results.R;
+outPath = p.Results.outPath;
 
 %% Perform Checks
 %  Check for file existence
@@ -61,16 +83,14 @@ if exist('R','var') || ~isempty(R)
     end
 end
 
-
-header = {'Gene','G1O1','G1O2','G1O3','G2O1','G2O2','G2O3'};
 geneList = txt(1:end,1);
 
 %  Check for NaN and Remove them
 idxNaN = ~any(isnan(num),2);
 if numel(find(idxNaN == 0)) > 0
-    warning(sprintf('Found %d genes with missing observations or replicates < T...discarding',numel(find(idxNaN == 0))));
+    warning(sprintf('Found %d genes with missing observations or replicates < R...discarding',numel(find(idxNaN == 0))));
 else
-    fprintf('All genes have replicates = T...data is excellent.');
+    fprintf('All genes have replicates = R...data is excellent.');
 end
 geneList = geneList(idxNaN);
 num = num(idxNaN,:);
@@ -108,6 +128,9 @@ for i = 1:length(tmp)
     corrMat{i,4} = tmp(i,4);
 end
 
+disp(sprintf('Computed %d correlations out of %d possible correlations...discarded %d due to NaNs'...
+    ,length(corrMat),nchoosek(nN,2),nchoosek(nN,2)-length(corrMat)));
+
 %% Write Array
 writetable(cell2table(corrMat),fullfile(outPath,strcat(fn,'.csv')),...
     'WriteVariableNames',false);
@@ -116,18 +139,17 @@ disp(sprintf('File saved as %s',fullfile(outPath,strcat(fn,'.csv'))));
     function vector = vectorize(corrMat)
         %  Convert correlation matrix to vector by extracting values above
         %  the upper triangle and vectorizing them.
-        tmp = triu(corrMat,1);
-        sz = length(tmp);
+        sz = length(corrMat);
         cnt = 0;
+        vector = zeros(nchoosek(sz,2),3);
         for i = 1:sz
             for j = 1:sz
                 if i ~= j & j > i
                     cnt = cnt + 1;
-                    vector(cnt,1) = i;
-                    vector(cnt,2) = j;
-                    vector(cnt,3) = tmp(i,j);
+                    vector(cnt,:) = [i, j, corrMat(i,j)];
                 end
             end
         end
     end  % vectorize end
+toc;
 end  % getCorrelation end
