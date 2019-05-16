@@ -89,20 +89,45 @@ R2_S = R + 1;
 R2_E = R * 2;
 
 %% Find Correlation
+%  Replicate values are transposed because MATLAB computes correlation
+%  between columns. Each column is a set of observation, or replicates in
+%  this case.
 corrMat1 = corr(transpose(num(:,R1_S:R1_E)));
 corrMat2 = corr(transpose(num(:,R2_S:R2_E)));
 
-%   Obtain Upper Triangle
-corrMat1 = triu(corrMat1,1);
-corrMat2 = triu(corrMat2,1);
+%  Convert correlation into vectors
+corrMat1 = vectorize(corrMat1);
+corrMat2 = vectorize(corrMat2);
 
-%   Compress to Sparse Matrix
-corrMat1 = sparse(corrMat1);
-corrMat2 = sparse(corrMat2);
-
-
-
-
-
-
+%% Form Correlation Table
+tmp = [corrMat1 corrMat2(:,3)];
+for i = 1:length(tmp)
+    corrMat{i,1} = geneList(tmp(i,1));
+    corrMat{i,2} = geneList(tmp(i,2));
+    corrMat{i,3} =  tmp(i,3);
+    corrMat{i,4} = tmp(i,4);
 end
+
+%% Write Array
+writetable(cell2table(corrMat),fullfile(outPath,strcat(fn,'.csv')),...
+    'WriteVariableNames',false);
+disp(sprintf('File saved as %s',fullfile(outPath,strcat(fn,'.csv'))));
+
+    function vector = vectorize(corrMat)
+        %  Convert correlation matrix to vector by extracting values above
+        %  the upper triangle and vectorizing them.
+        tmp = triu(corrMat,1);
+        sz = length(tmp);
+        cnt = 0;
+        for i = 1:sz
+            for j = 1:sz
+                if i ~= j & j > i
+                    cnt = cnt + 1;
+                    vector(cnt,1) = i;
+                    vector(cnt,2) = j;
+                    vector(cnt,3) = tmp(i,j);
+                end
+            end
+        end
+    end  % vectorize end
+end  % getCorrelation end
