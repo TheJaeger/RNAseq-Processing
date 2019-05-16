@@ -190,7 +190,7 @@ ax = gca;
         set(ax,'Color',c3,...
             'GridColor','white','GridAlpha',1,'MinorGridAlpha',0.15,...
             'fontname','helvetica','FontWeight','bold','fontsize',14);
-legend(aLeg,'Location','north');
+legend(aLeg,'Location','southeastoutside');
 print(fullfile(savePath,['histo-',fn]),'-dpng','-r800');
 disp(sprintf('Histogram saved in %s',fullfile(savePath,['histo-',fn,'.png'])));
 
