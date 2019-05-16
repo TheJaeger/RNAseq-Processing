@@ -94,7 +94,7 @@ geneList = txt(1:end,1);
 %  Check for NaN and Remove them
 idxNaN = ~any(isnan(num),2);
 if numel(find(idxNaN == 0)) > 0
-    warning(sprintf('Found %d genes with missing observations or replicates < R...discarding',numel(find(idxNaN == 0))));
+    disp(sprintf('Found %d genes with missing observations or replicates < R...discarding',numel(find(idxNaN == 0))));
 else
     fprintf('All genes have replicates = R...data is excellent.');
 end
@@ -158,7 +158,7 @@ aLeg = strsplit(fn,'vs');
 
 figure; fig = gcf;
 
-set(fig,'Units','Normalized','OuterPosition',[0 0 1 1],...
+set(fig,'PaperUnits','inches','PaperPosition',[0 0 12 9],...
     'InvertHardcopy','off','Color','white','Visible','off');
 
 [nC1 eC1] = histcounts(cell2mat(corrMat(:,3)),64,...
@@ -191,7 +191,8 @@ ax = gca;
             'GridColor','white','GridAlpha',1,'MinorGridAlpha',0.15,...
             'fontname','helvetica','FontWeight','bold','fontsize',14);
 legend(aLeg,'Location','north');
-print(fullfile(savePath,['histo-',fn]),'-dpng','-r300');
+print(fullfile(savePath,['histo-',fn]),'-dpng','-r800');
+disp(sprintf('Histogram saved in %s',fullfile(savePath,['histo-',fn,'.png'])));
 
 %% Dependent Functions
     function vector = vectorize(corrMat)
