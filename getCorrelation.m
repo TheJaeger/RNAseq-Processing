@@ -68,6 +68,8 @@ end
 
 [num,txt,raw] = xlsread(xlsPath);
 [~,fn,~] = fileparts(xlsPath);
+savePath = fullfile(outPath,fn);
+mkdir(savePath);
 
 %  Perform check on number of triplicates specified. Try to use number of
 %  columns divided by two. If fails, default to triplicates where R = 3.
@@ -140,10 +142,10 @@ disp(sprintf('Computed %d correlations out of %d possible correlations...discard
 
 %% Write Array
 fprintf('Writing CSV...');
-writetable(cell2table(corrMat),fullfile(outPath,strcat(fn,'.csv')),...
+writetable(cell2table(corrMat),fullfile(savePath,strcat('corr-',fn,'.csv')),...
     'WriteVariableNames',false);
 fprintf('done\n');
-disp(sprintf('File saved as %s',fullfile(outPath,strcat(fn,'.csv'))));
+disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('corr'-fn,'.csv'))));
 
 %% Dependent Functions
     function vector = vectorize(corrMat)
