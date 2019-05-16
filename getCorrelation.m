@@ -45,6 +45,9 @@ R = p.Results.R;
 outPath = p.Results.outPath;
 
 %% Perform Checks
+%  Close any open parallel loops
+closeParallel;
+
 %  Check for file existence
 if ~exist(xlsPath); error('Input file does not exist'); end
 
@@ -120,23 +123,26 @@ corrMat2 = corr(transpose(num(:,R2_S:R2_E)));
 openParallel;
 corrMat1 = vectorize(corrMat1);
 corrMat2 = vectorize(corrMat2);
-closeParallel;
 
 %% Form Correlation Table
 tmp = [corrMat1 corrMat2(:,3)];
-for i = 1:length(tmp)
-    corrMat{i,1} = geneList(tmp(i,1));
-    corrMat{i,2} = geneList(tmp(i,2));
-    corrMat{i,3} =  tmp(i,3);
-    corrMat{i,4} = tmp(i,4);
+clear num corrMat1 corrMat2
+parfor i = 1:length(tmp)
+    A = geneList(tmp(i,1));
+    B = geneList(tmp(i,2));
+    C =  tmp(i,3);
+    D = tmp(i,4);
+    corrMat(i,:) = [A B C D];
 end
-
+closeParallel;
 disp(sprintf('Computed %d correlations out of %d possible correlations...discarded %d due to NaNs'...
     ,length(corrMat),nchoosek(nN,2),nchoosek(nN,2)-length(corrMat)));
 
 %% Write Array
+fprintf('Writing CSV...');
 writetable(cell2table(corrMat),fullfile(outPath,strcat(fn,'.csv')),...
     'WriteVariableNames',false);
+fprintf('done\n');
 disp(sprintf('File saved as %s',fullfile(outPath,strcat(fn,'.csv'))));
 
 %% Dependent Functions
