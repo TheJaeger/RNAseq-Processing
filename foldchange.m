@@ -119,7 +119,7 @@ parfor i = 1:nN
     tmp2 = mean(num(i,R2_S:R2_E));  % mean of C2
     fc{i} = log(tmp2/tmp1);          % log of fold change
 end
-
+closeParallel;  % close parallel pool
 %% Construct Gene and FC Array
 fc = fc';           % transpose fold change vector
 changeMat = [geneList fc];      % concatenate gene list and fc
