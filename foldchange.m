@@ -66,7 +66,6 @@ if ~exist('outPath','var') || isempty(outPath)
 end
 
 %% Load Data File
-
 [num,txt,raw] = xlsread(xlsPath);
 [~,fn,~] = fileparts(xlsPath);
 savePath = fullfile(outPath,fn);
@@ -102,9 +101,34 @@ end
 geneList = geneList(idxNaN);
 num = num(idxNaN,:);
 
+%% Form Independent Conditions
+%  R1 --> First condition
+%  R2 --> Second condition
+%  S --> Starting columnwise index of replicate
+%  E --> Ending columnwise index of replicate
+R1_S = 1;
+R1_E = R;
+R2_S = R + 1;
+R2_E = R * 2;
 
+%% Compute Means Per Gene, Per Condition
+openParallel;   % open parallel pool
+parfor i = 1:size(num,1)
+    tmp1 = mean(num(i,R1_S:R1_E));  % mean of C1
+    tmp2 = mean(num(i,R2_S:R2_E));  % mean of C2
+    fc{i} = log(tmp2/tmp1);          % log of fold change
+end
 
+%% Construct Gene and FC Array
+fc = fc';           % transpose fold change vector
+changeMat = [geneList fc];      % concatenate gene list and fc
 
+%% Write Array
+fprintf('Writing CSV...');
+writetable(cell2table(changeMat),fullfile(savePath,strcat('fc-',fn,'.csv')),...
+    'WriteVariableNames',false);
+fprintf('done\n');
+disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('fc-',fn,'.csv'))));
 
 %% Dependent Functions
 % Open Parallel Pool
