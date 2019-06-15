@@ -156,10 +156,26 @@ for k = 1:length(N)
     mC(k) = median([E(k) E(k+1)]);
 end
 
+% Vertical lines (No change)
+x_no = [0 0];
+y_no = [0 max(N)];
+
+% Vertical lines (+Double)
+x_pos = [log(2) log(2)];
+y_pos = [0 max(N)];
+
+% Vertical lines (+Double)
+x_neg = [-log(2) -log(2)];
+y_neg = [0 max(N)];
+
+% Plot
+hold on;
+plot(x_no,y_no,'-r','LineWidth',2);
+plot(x_pos,y_pos,'--','Color',c2,'LineWidth',2);
+plot(x_neg,y_pos,'--','Color',c2,'LineWidth',2);
 pArea = area(mC,N,...
     'EdgeColor',c1,'LineWidth',3,...
     'FaceColor',c1,'FaceAlpha',0.55);
-
 hold off;
 title(sprintf('Histogram of Transition Fold Changes (%s --> %s)',...
     aLeg{1},aLeg{2}));
