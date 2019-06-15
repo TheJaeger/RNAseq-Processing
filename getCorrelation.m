@@ -178,10 +178,10 @@ nC2 = smooth(nC2);
 % Correlation zones
 all_y = [max(vertcat(nC1,nC2)) max(vertcat(nC1,nC2))];
 low_x = [-0.3 0.3];
-mid_x_neg = [-0.3 -0.75];
-mid_x_pos = [0.3 0.75];
-hig_x_neg = [-0.75 -1];
-hig_x_pos = [0.75 1];
+mid_x_neg = [-0.3 -0.80];
+mid_x_pos = [0.3 0.80];
+hig_x_neg = [-0.80 -1];
+hig_x_pos = [0.80 1];
 
 for k = 1:length(nC1)
     mC1(k) = median([eC1(k) eC1(k+1)]);
