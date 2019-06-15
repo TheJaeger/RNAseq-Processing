@@ -29,6 +29,11 @@ function changeMat = foldchange(xlsPath,varargin)
 % Author: Siddhartha Dhiman
 % Email: sdhiman@buffalo.edu & dhiman@musc.edu
 % Created with MATLAB 2019a
+disp('==================================================================');
+disp('                        Running foldchange                        ');
+disp('    Target:');
+disp(sprintf('        %s',xlsPath));
+disp('==================================================================');
 
 %% Parse Inputs
 tic;
@@ -129,7 +134,7 @@ fprintf('Writing CSV...');
 writetable(cell2table(changeMat),fullfile(savePath,strcat('fc-',fn,'.csv')),...
     'WriteVariableNames',false);
 fprintf('done\n');
-disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('fc-',fn,'.csv'))));
+disp(sprintf('Fold changes saved in %s',fullfile(savePath,strcat('fc-',fn,'.csv'))));
 
 %% Plot Histograms
 %  Plotting colors
@@ -166,8 +171,8 @@ ax = gca;
         set(ax,'Color',c3,...
             'GridColor','white','GridAlpha',1,'MinorGridAlpha',0.15,...
             'fontname','helvetica','FontWeight','bold','fontsize',14);
-print(fullfile(savePath,['histo-',fn]),'-dpng','-r800');
-disp(sprintf('Histogram saved in %s',fullfile(savePath,['histo-',fn,'.png'])));
+print(fullfile(savePath,['fc-hist-',fn]),'-dpng','-r800');
+disp(sprintf('Histogram saved in %s',fullfile(savePath,['fc-hist-',fn,'.png'])));
 
 %% Dependent Functions
 % Open Parallel Pool

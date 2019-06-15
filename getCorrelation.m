@@ -30,6 +30,11 @@ function corrMat = getCorrelation(xlsPath,varargin)
 % Author: Siddhartha Dhiman
 % Email: sdhiman@buffalo.edu & dhiman@musc.edu
 % Created with MATLAB 2019a
+disp('==================================================================');
+disp('                     Running getCorrelation');
+disp('    Target:');
+disp(sprintf('        %s',xlsPath));
+disp('==================================================================');
 
 %% Parse Inputs
 tic;
@@ -144,7 +149,7 @@ disp(sprintf('Computed %d correlations out of %d possible correlations...discard
 
 %% Write Array
 fprintf('Writing CSV...');
-writetable(cell2table(corrMat),fullfile(savePath,strcat('corr-',fn,'.csv')),...
+writetable(cell2table(corrMat),fullfile(savePath,strcat('cr-',fn,'.csv')),...
     'WriteVariableNames',false);
 fprintf('done\n');
 disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('corr-',fn,'.csv'))));
@@ -193,8 +198,8 @@ ax = gca;
             'GridColor','white','GridAlpha',1,'MinorGridAlpha',0.15,...
             'fontname','helvetica','FontWeight','bold','fontsize',14);
 legend(aLeg,'Location','southeastoutside');
-print(fullfile(savePath,['histo-',fn]),'-dpng','-r800');
-disp(sprintf('Histogram saved in %s',fullfile(savePath,['histo-',fn,'.png'])));
+print(fullfile(savePath,['cr-hist-',fn]),'-dpng','-r800');
+disp(sprintf('Histogram saved in %s',fullfile(savePath,['cr-hist-',fn,'.png'])));
 
 %% Dependent Functions
     function vector = vectorize(corrMat)
