@@ -195,9 +195,9 @@ xlabel('Correlation');
 ylabel('% of Pairwise Correlations');
 grid on; box on; axis tight;
 ax = gca;
-        set(ax,'Color',c3,...
-            'GridColor','white','GridAlpha',1,'MinorGridAlpha',0.15,...
-            'fontname','helvetica','FontWeight','bold','fontsize',14);
+set(ax,'Color',c3,...
+    'GridColor','white','GridAlpha',1,'MinorGridAlpha',0.15,...
+    'fontname','helvetica','FontWeight','bold','fontsize',14);
 legend(aLeg,'Location','southeastoutside');
 print(fullfile(savePath,['cr-hist-',fn]),'-dpng','-r800');
 disp(sprintf('Histogram saved in %s',fullfile(savePath,['cr-hist-',fn,'.png'])));
@@ -229,6 +229,7 @@ disp(sprintf('Histogram saved in %s',fullfile(savePath,['cr-hist-',fn,'.png'])))
         numworkers = feature('numcores')/2;
         disp(sprintf('Parallel Processing: Found %d logical cores',numworkers));
         parObj = parpool('local',numworkers);
+        disp('');
     end  % openParallel end
 
 %  Close Parallel Pool
