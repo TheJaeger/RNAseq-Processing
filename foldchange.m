@@ -112,8 +112,9 @@ R2_S = R + 1;
 R2_E = R * 2;
 
 %% Compute Means Per Gene, Per Condition
+[nN nR] = size(num);
 openParallel;   % open parallel pool
-parfor i = 1:size(num,1)
+parfor i = 1:nN
     tmp1 = mean(num(i,R1_S:R1_E));  % mean of C1
     tmp2 = mean(num(i,R2_S:R2_E));  % mean of C2
     fc{i} = log(tmp2/tmp1);          % log of fold change
@@ -130,12 +131,50 @@ writetable(cell2table(changeMat),fullfile(savePath,strcat('fc-',fn,'.csv')),...
 fprintf('done\n');
 disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('fc-',fn,'.csv'))));
 
+%% Plot Histograms
+%  Plotting colors
+c1 = [86,187,131]/255;   % condition 1 color
+c3 = [235,235,235]/255;  % background color
+
+%  Legend titles
+aLeg = strsplit(fn,'vs');
+
+figure; fig = gcf;
+
+set(fig,'PaperUnits','inches','PaperPosition',[0 0 12 9],...
+    'InvertHardcopy','off','Color','white','Visible','off');
+
+[N E] = histcounts(cell2mat(changeMat(:,2)),64,...
+    'Normalization','Probability');
+N = smooth(N);
+
+for k = 1:length(N)
+    mC(k) = median([E(k) E(k+1)]);
+end
+
+pArea = area(mC,N,...
+    'EdgeColor',c1,'LineWidth',3,...
+    'FaceColor',c1,'FaceAlpha',0.55);
+
+hold off;
+title(sprintf('Histogram of Transition Fold Changes (%s --> %s)',...
+    aLeg{1},aLeg{2}));
+xlabel('Fold Change');
+ylabel('% of Genes');
+grid on; box on; axis tight;
+ax = gca;
+        set(ax,'Color',c3,...
+            'GridColor','white','GridAlpha',1,'MinorGridAlpha',0.15,...
+            'fontname','helvetica','FontWeight','bold','fontsize',14);
+print(fullfile(savePath,['histo-',fn]),'-dpng','-r800');
+disp(sprintf('Histogram saved in %s',fullfile(savePath,['histo-',fn,'.png'])));
+
 %% Dependent Functions
 % Open Parallel Pool
     function openParallel
         %  Queries the maximum number of logical cores avaialble and opens
         %  them for computation
-        numworkers = feature('numcores');
+        numworkers = feature('numcores')/2;
         disp(sprintf('Parallel Processing: Found %d logical cores',numworkers));
         parObj = parpool('local',numworkers);
     end  % openParallel end
@@ -147,4 +186,4 @@ disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('fc-',fn,'.csv'
         delete(parObj);
     end  % closeParallel end
 toc;
-end  % getCorrelation end
+end  % foldchange() end
