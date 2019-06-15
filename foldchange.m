@@ -151,7 +151,6 @@ set(fig,'PaperUnits','inches','PaperPosition',[0 0 12 9],...
 
 [N E] = histcounts(cell2mat(changeMat(:,2)),64,...
     'Normalization','Probability');
-N = smooth(N);
 
 for k = 1:length(N)
     mC(k) = median([E(k) E(k+1)]);
