@@ -249,7 +249,7 @@ disp(sprintf('Histogram saved in %s',fullfile(savePath,['cr-hist-',fn,'.png'])))
     function openParallel
         %  Queries the maximum number of logical cores avaialble and opens
         %  them for computation
-        numworkers = feature('numcores')/2;
+        numworkers = feature('numcores');
         disp(sprintf('Parallel Processing: Found %d logical cores',numworkers));
         parObj = parpool('local',numworkers);
         disp('');
