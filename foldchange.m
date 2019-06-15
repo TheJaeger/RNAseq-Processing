@@ -163,7 +163,7 @@ pArea = area(mC,N,...
 hold off;
 title(sprintf('Histogram of Transition Fold Changes (%s --> %s)',...
     aLeg{1},aLeg{2}));
-xlabel('Fold Change');
+xlabel('Logarithmic Fold Change');
 ylabel('% of Genes');
 grid on; box on; axis tight;
 ax = gca;
