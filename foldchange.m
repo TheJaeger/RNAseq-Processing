@@ -139,6 +139,7 @@ disp(sprintf('Fold changes saved in %s',fullfile(savePath,strcat('fc-',fn,'.csv'
 %% Plot Histograms
 %  Plotting colors
 c1 = [86,187,131]/255;   % condition 1 color
+c2 = [78,173,241]/255;   % condition 2 color
 c3 = [235,235,235]/255;  % background color
 
 %  Legend titles
