@@ -23,7 +23,9 @@ function corrMat = getCorrelation(xlsPath,varargin)
 %
 % Output:
 %--------
-% corrMat:
+% corrMat: table contianing gene-gene pairs and their correlations for the
+% two conditions
+%   [Gene_Source Gene_Target Correlation_C1 Correlation_C2]
 %
 % Author: Siddhartha Dhiman
 % Email: sdhiman@buffalo.edu & dhiman@musc.edu
@@ -76,15 +78,15 @@ mkdir(savePath);
 [nN nR] = size(num);
 if exist('R','var') || ~isempty(R)
     if rem(nR,R) == 0
-        disp(sprintf('Specified R = %d matches Excel',R));
+        disp(sprintf('Specified R = %d matches dataset',R));
     else
         tmp = nR/2;
         if isreal(tmp) && rem(tmp,1)==0
-            warning(sprintf('Specified R = %d does not match Excel. Determined R = %d.',R,tmp));
+            warning(sprintf('Specified R = %d does not match dataset. Determined R = %d.\n',R,tmp));
             R = tmp;
         else
             R = 3;
-            warning(sprintf('Specified R = %d does not match Excel. Using default R = 3.',R));
+            warning(sprintf('Specified R = %d does not match dataset. Using default R = 3.\n',R));
         end
     end
 end
@@ -94,9 +96,9 @@ geneList = txt(1:end,1);
 %  Check for NaN and Remove them
 idxNaN = ~any(isnan(num),2);
 if numel(find(idxNaN == 0)) > 0
-    disp(sprintf('Found %d genes with missing observations or replicates < R...discarding',numel(find(idxNaN == 0))));
+    disp(sprintf('Found %d genes with missing observations or replicates < R...discarding\n',numel(find(idxNaN == 0))));
 else
-    fprintf('All genes have replicates = R...data is excellent.');
+    fprintf('All genes have replicates = R...data is excellent.\n');
 end
 geneList = geneList(idxNaN);
 num = num(idxNaN,:);
