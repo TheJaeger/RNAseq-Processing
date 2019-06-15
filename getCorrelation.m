@@ -101,7 +101,7 @@ geneList = txt(1:end,1);
 %  Check for NaN and Remove them
 idxNaN = ~any(isnan(num),2);
 if numel(find(idxNaN == 0)) > 0
-    disp(sprintf('Found %d genes with missing observations or replicates < R...discarding\n',numel(find(idxNaN == 0))));
+    disp(sprintf('Found %d gene(s) with missing observations or replicates < R...discarding\n',numel(find(idxNaN == 0))));
 else
     fprintf('All genes have replicates = R...data is excellent.\n');
 end
