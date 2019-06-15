@@ -147,7 +147,7 @@ aLeg = strsplit(fn,'vs');
 figure; fig = gcf;
 
 set(fig,'PaperUnits','inches','PaperPosition',[0 0 12 9],...
-    'InvertHardcopy','off','Color','white','Visible','off');
+    'InvertHardcopy','off','Color',c3,'Visible','off');
 
 [N E] = histcounts(cell2mat(changeMat(:,2)),64,...
     'Normalization','Probability');
