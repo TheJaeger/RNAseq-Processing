@@ -2,7 +2,7 @@ clc; clear all; close all;
 
 %% Define Paths for Input and Output
 inPath = 'D:\Datasets\RNAS-Seq\mRNA';
-outPath = 'D:\SystemFiles\siddh\Downloads\RNA-Seq'
+outPath = 'D:\SystemFiles\siddh\Downloads\RNA-Seq';
 R = 3;
 
 %% Start
