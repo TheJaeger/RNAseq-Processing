@@ -1,4 +1,4 @@
-function corrMat = specificCorrelation(xlsPath,xlsTarget,varargin)
+function specificCorrelation(xlsPath,xlsTarget,varargin)
 % specificCorrelation computes correlation of all possible gene pairs in an
 % Excel sheet containing RNA sequence triplicates, provided that a target
 % list is provided as well
@@ -33,8 +33,10 @@ function corrMat = specificCorrelation(xlsPath,xlsTarget,varargin)
 % Created with MATLAB 2019a
 disp('==================================================================');
 disp('                  Running specificCorrelation');
-disp('    Target:');
+disp('    Source:');
 disp(sprintf('        %s',xlsPath));
+disp('    Target:');
+disp(sprintf('        %s',xlsTarget));
 disp('==================================================================');
 
 %% Parse Inputs
@@ -103,7 +105,7 @@ if exist('R','var') || ~isempty(R)
     end
 end
 
-geneList = txtC(1:end,1);
+geneListC = txtC(1:end,1);
 
 %  Check for NaN and Remove them
 idxNaN = ~any(isnan(numC),2);
@@ -112,8 +114,139 @@ if numel(find(idxNaN == 0)) > 0
 else
     fprintf('All genes have replicates = R...data is excellent.\n');
 end
-geneList = geneList(idxNaN);
+geneListC = geneListC(idxNaN);
 numC = numC(idxNaN,:);
+
+%% Standardize Data (Entire Row)
+numC = zscore(numC,0,2);
+
+%% Form Independent Conditions
+%  R1 --> First condition
+%  R2 --> Second condition
+%  S --> Starting columnwise index of replicate
+%  E --> Ending columnwise index of replicate
+R1_S = 1;
+R1_E = R;
+R2_S = R + 1;
+R2_E = R * 2;
+
+%% Load Target Excel and Iterate of Number of Sheets
+[~,tSheets] = xlsfinfo(xlsTarget);
+nSheets = length(tSheets);
+openParallel;
+for idxSheet = 2:nSheets    %   Remove first index because it contains information on sheets
+    [~,txtT,~] = xlsread(xlsTarget, idxSheet);
+    idxTarget = contains(geneListC,txtT);
+    disp(sprintf('%s: Found %d genes out of %d',...
+        tSheets{idxSheet},nnz(idxTarget),length(txtT)));
+    geneList = geneListC(idxTarget);
+    num = numC(idxTarget,:);
+    
+    %% Find Correlation
+    %  Replicate values are transposed because MATLAB computes correlation
+    %  between columns. Each column is a set of observation, or replicates in
+    %  this case.
+    corrMat1 = corr(transpose(num(:,R1_S:R1_E)));
+    corrMat2 = corr(transpose(num(:,R2_S:R2_E)));
+    
+    %  Convert correlation into vectors
+    corrMat1 = vectorize(corrMat1);
+    corrMat2 = vectorize(corrMat2);
+    
+    %% Form Correlation Table
+    tmp = [corrMat1 corrMat2(:,3)];
+    clear num corrMat1 corrMat2
+    parfor i = 1:length(tmp)
+        A = geneList(tmp(i,1));
+        B = geneList(tmp(i,2));
+        C =  tmp(i,3);
+        D = tmp(i,4);
+        corrMat(i,:) = [A B C D];
+    end
+    disp(sprintf('Computed %d correlations out of %d possible correlations...discarded %d due to NaNs'...
+        ,length(corrMat),nchoosek(nN,2),nchoosek(nN,2)-length(corrMat)));
+    
+    %% Write Array
+    fprintf('Writing CSV...');
+    writetable(cell2table(corrMat),...
+        fullfile(savePath,strcat('cr-',fn,'-',tSheets{idxSheet},'.csv')),...
+        'WriteVariableNames',false);
+    fprintf('done\n');
+    disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('cr-',fn,'-',tSheets{idxSheet},'.csv'))));
+    
+    %% Plot Histograms
+    %  Plotting colors
+    c1 = [86,187,131]/255;   % condition 1 color
+    c2 = [78,173,241]/255;   % condition 2 color
+    c3 = [235,235,235]/255;  % background color
+    
+    %  Legend titles
+    aLeg = strsplit(fn,'vs');
+    
+    figure; fig = gcf;
+    
+    set(fig,'PaperUnits','inches','PaperPosition',[0 0 12 9],...
+        'InvertHardcopy','off','Color',c3,'Visible','off');
+    
+    [nC1 eC1] = histcounts(cell2mat(corrMat(:,3)),64,...
+        'Normalization','Probability');
+    [nC2 eC2] = histcounts(cell2mat(corrMat(:,4)),64,...
+        'Normalization','Probability');
+    nC1 = smooth(nC1);
+    nC2 = smooth(nC2);
+    
+    % Correlation zones
+    all_y = [max(vertcat(nC1,nC2)) max(vertcat(nC1,nC2))];
+    low_x = [-0.3 0.3];
+    mid_x_neg = [-0.3 -0.80];
+    mid_x_pos = [0.3 0.80];
+    hig_x_neg = [-0.80 -1];
+    hig_x_pos = [0.80 1];
+    
+    for k = 1:length(nC1)
+        mC1(k) = median([eC1(k) eC1(k+1)]);
+    end
+    for k = 1:length(nC2)
+        mC2(k) = median([eC2(k) eC2(k+1)]);
+    end
+    hold on;
+    c1Area = plot(mC1,nC1,...
+        'Color',c1,'LineWidth',3);
+    c2Area = plot(mC2,nC2,...
+        'Color',c2,'LineWidth',3);
+    area(low_x,all_y,...
+        'EdgeColor','none',...
+        'FaceColor','red','FaceAlpha',0.05);
+    area(mid_x_neg,all_y,...
+        'EdgeColor','none',...
+        'FaceColor','yellow','FaceAlpha',0.05);
+    area(mid_x_pos,all_y,...
+        'EdgeColor','none',...
+        'FaceColor','yellow','FaceAlpha',0.05);
+    area(hig_x_neg,all_y,...
+        'EdgeColor','none',...
+        'FaceColor','green','FaceAlpha',0.05);
+    area(hig_x_pos,all_y,...
+        'EdgeColor','none',...
+        'FaceColor','green','FaceAlpha',0.05);
+    hold off;
+    title(sprintf('Histogram of %s vs %s Correlations in %s',...
+        aLeg{1},aLeg{2},tSheets{idxSheet}));
+    xlabel('Correlation');
+    ylabel('% of Pairwise Correlations');
+    grid on; box on; axis tight;
+    ax = gca;
+    set(ax,'Color',c3,...
+        'GridColor','white','GridAlpha',1,'MinorGridAlpha',0.15,...
+        'fontname','helvetica','FontWeight','bold','fontsize',14);
+    legend(aLeg,'Location','southeastoutside');
+    print(fullfile(savePath,['cr-hist-',fn,'-',tSheets{idxSheet},'.png']),...
+        '-dpng','-r800');
+    fprintf('Histogram saved in %s\n',...
+        fullfile(savePath,['cr-hist-',fn,'-',tSheets{idxSheet},'.png']));
+    clear idxTarget geneList corrMat idxTarget;
+end
+closeParallel;
 
 %% Dependent Functions
     function vector = vectorize(corrMat)
@@ -151,3 +284,4 @@ numC = numC(idxNaN,:);
         parObj = gcp('nocreate');
         delete(parObj);
     end  % closeParallel end
+end %specificCorrelation
