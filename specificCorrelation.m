@@ -78,9 +78,42 @@ if ~exist('outPath','var') || isempty(outPath)
     outPath = pwd;
 end
 
+%% Load Data File
+%   Load triplicate file
+[numC,txtC,rawC] = xlsread(xlsPath);
+[~,fn,~] = fileparts(xlsPath);
+savePath = fullfile(outPath,fn);
+mkdir(savePath);
 
+%  Perform check on number of triplicates specified. Try to use number of
+%  columns divided by two. If fails, default to triplicates where R = 3.
+[nN nR] = size(numC);
+if exist('R','var') || ~isempty(R)
+    if rem(nR,R) == 0
+        disp(sprintf('Specified R = %d matches dataset',R));
+    else
+        tmp = nR/2;
+        if isreal(tmp) && rem(tmp,1)==0
+            warning(sprintf('Specified R = %d does not match dataset. Determined R = %d.\n',R,tmp));
+            R = tmp;
+        else
+            R = 3;
+            warning(sprintf('Specified R = %d does not match dataset. Using default R = 3.\n',R));
+        end
+    end
+end
 
+geneList = txtC(1:end,1);
 
+%  Check for NaN and Remove them
+idxNaN = ~any(isnan(numC),2);
+if numel(find(idxNaN == 0)) > 0
+    disp(sprintf('Found %d gene(s) with missing observations or replicates < R...discarding\n',numel(find(idxNaN == 0))));
+else
+    fprintf('All genes have replicates = R...data is excellent.\n');
+end
+geneList = geneList(idxNaN);
+numC = numC(idxNaN,:);
 
 %% Dependent Functions
     function vector = vectorize(corrMat)
