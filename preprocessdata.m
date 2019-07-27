@@ -15,6 +15,9 @@ function preprocessdata(xlsPath,varargin)
 % 1. Scaling: Logical true or false to specify whether to z-score
 %             standardize the data
 %
+% 1. Threshold: Integer specifying how many non-zeros need to be present
+%               before a row is removed. Default: 1
+%
 % 2. outPath: output directory to save CSV of pairwise correlations
 %             (defaults: current working directory; same name as input file)
 %
@@ -29,10 +32,12 @@ function preprocessdata(xlsPath,varargin)
 tic;
 defaultScale = false;
 defaultOut = pwd;
+defaultTh = 1;
 
 p = inputParser;
 p.addRequired('xlsPath',@isstr);
-p.addOptional('Scaling',false,@islogical)
+p.addOptional('Scaling',false,@islogical);
+p.addOptional('Threshold',defaultTh,@(x) rem(x,1)==0);
 p.addOptional('OutPath',defaultOut,@isstr);
 
 parse(p,xlsPath,varargin{:});
@@ -68,6 +73,7 @@ disp('                  Running commonGenes');
 disp('    Target:');
 disp(sprintf('        %s',xlsPath));
 disp('    Variables:');
+disp(sprintf('         Threshold = %d',p.Results.Threshold));
 disp(sprintf('         Scaling is %s',scalingState));
 disp('==================================================================');
 
@@ -75,7 +81,6 @@ disp('==================================================================');
 [num,txt,raw] = xlsread(xlsPath);
 num(:,1) = [];
 [~,fn,~] = fileparts(xlsPath);
-savePath = fullfile(outPath,[fn,'_clean.csv']);
 
 hdr = txt(1,:);
 hdr(1) = [];
@@ -83,7 +88,13 @@ geneList = txt(2:end,2);
 
 %% Index Rows to Remove 
 [~,keepIdx1] = rmmissing(num); % Rows with missing data
-keepIdx2 = any(num,2);         % Rows not completely filled with zeros
+for i = 1:size(num,1)
+    if nnz(num(i,:)) <= p.Results.Threshold
+        keepIdx2(i,1) = false;
+    else
+        keepIdx2(i,1) = true;
+    end
+end
 % Add the two indexes and make them logical
 keepIdx = logical(keepIdx1 + keepIdx2);
 
@@ -92,6 +103,9 @@ geneList = geneList(keepIdx); num = num(keepIdx,:);
 
 if p.Results.Scaling
     num = normalize(num,2);
+    savePath = fullfile(outPath,[fn,'_clean_scaled.csv']);
+else
+    savePath = fullfile(outPath,[fn,'_clean.csv']);
 end
     
 %% Join Data in Table and Write
