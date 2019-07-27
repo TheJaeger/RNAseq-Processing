@@ -97,6 +97,9 @@ end
 %% Join Data in Table and Write
 tab = cell2table(horzcat(geneList, num2cell(num)), 'VariableNames', hdr);
 writetable(tab,savePath);
+disp(sprintf('%d genes out of %d removed',...
+    numel(keepIdx) - nnz(keepIdx),...
+    numel(keepIdx)));
 toc;
 end % cleanData (main)
 
