@@ -12,13 +12,16 @@ function preprocessdata(xlsPath,varargin)
 %
 % Optional input:
 %----------------
-% 1. Scaling: Logical true or false to specify whether to z-score
+% 2. FilterList: Path to a list of predefined list for filtering.
+%                Triplicates will only be prduced for these genes
+%
+% 3. Scaling: Logical true or false to specify whether to z-score
 %             standardize the data
 %
-% 1. Threshold: Integer specifying how many non-zeros need to be present
+% 4. Threshold: Integer specifying how many non-zeros need to be present
 %               before a row is removed. Default: 1
 %
-% 2. outPath: output directory to save CSV of pairwise correlations
+% 5. outPath: output directory to save CSV of pairwise correlations
 %             (defaults: current working directory; same name as input file)
 %
 % Output:
@@ -36,6 +39,7 @@ defaultTh = 1;
 
 p = inputParser;
 p.addRequired('xlsPath',@isstr);
+p.addOptional('FilterList',@exists)
 p.addOptional('Scaling',false,@islogical);
 p.addOptional('Threshold',defaultTh,@(x) rem(x,1)==0);
 p.addOptional('OutPath',defaultOut,@isstr);
@@ -68,11 +72,18 @@ else
     scalingState = 'disabled';
 end
 
+if exist('p.Results.FilterList','var') || ~isempty(p.Results.FilterList);
+    filterState = 'enabled';
+else
+    filterState = 'disabled'
+end
+
 disp('==================================================================');
 disp('                  Running commonGenes');
 disp('    Target:');
 disp(sprintf('        %s',xlsPath));
 disp('    Variables:');
+disp(sprintf('         Filter is %s',filterState));
 disp(sprintf('         Threshold = %d',p.Results.Threshold));
 disp(sprintf('         Scaling is %s',scalingState));
 disp('==================================================================');
@@ -85,6 +96,7 @@ num(:,1) = [];
 hdr = txt(1,:);
 hdr(1) = [];
 geneList = txt(2:end,2);
+nGenesA = numel(geneList);
 
 %% Index Rows to Remove 
 [~,keepIdx1] = rmmissing(num); % Rows with missing data
@@ -107,13 +119,24 @@ if p.Results.Scaling
 else
     savePath = fullfile(outPath,[fn,'_clean.csv']);
 end
+
+%% Load Filter List and Filter
+if exist('p.Results.FilterList','var') || ~isempty(p.Results.FilterList)
+    filterList = readcell(p.Results.FilterList);
+    [~,idxFilt,idxTest] = intersect(geneList,filterList);
+    disp(sprintf('Filter criteria: %d genes out of %d found',...
+        numel(idxFilt), numel(filterList)));
+    geneList = geneList(idxFilt);
+    num = num(idxFilt,:);
+end
+nGenesB = numel(geneList);
     
 %% Join Data in Table and Write
 tab = cell2table(horzcat(geneList, num2cell(num)), 'VariableNames', hdr);
 writetable(tab,savePath);
 disp(sprintf('%d genes out of %d removed',...
-    numel(keepIdx) - nnz(keepIdx),...
-    numel(keepIdx)));
+    nGenesA - nGenesB,...
+    nGenesA));
 toc;
 end % cleanData (main)
 
