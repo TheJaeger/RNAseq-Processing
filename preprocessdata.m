@@ -27,7 +27,7 @@ function preprocessdata(xlsPath,varargin)
 
 %% Parse Inputs
 tic;
-defaultScale = true;
+defaultScale = false;
 defaultOut = pwd;
 
 p = inputParser;
@@ -35,11 +35,9 @@ p.addRequired('xlsPath',@isstr);
 p.addOptional('Scaling',false,@islogical)
 p.addOptional('OutPath',defaultOut,@isstr);
 
-
 parse(p,xlsPath,varargin{:});
 
-R = p.Results.R;
-outPath = p.Results.outPath;
+outPath = p.Results.OutPath;
 
 %% Perform Checks
 %  Check for file existence
@@ -59,7 +57,7 @@ if ~exist('outPath','var') || isempty(outPath)
 end
 
 %% Print Configuration
-if Scaling
+if p.Results.Scaling
     scalingState = 'enabled';
 else
     scalingState = 'disabled';
@@ -92,14 +90,14 @@ keepIdx = logical(keepIdx1 + keepIdx2);
 %% Clean Gene List and Numbers and Scale
 geneList = geneList(keepIdx); num = num(keepIdx,:);
 
-if Scaling
+if p.Results.Scaling
     num = normalize(num,2);
 end
     
 %% Join Data in Table and Write
 tab = cell2table(horzcat(geneList, num2cell(num)), 'VariableNames', hdr);
 writetable(tab,savePath);
-
+toc;
 end % cleanData (main)
 
 
