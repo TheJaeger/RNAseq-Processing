@@ -1,46 +1,40 @@
-function commonGenes(xlsPath,R,C,varargin)
-% commonGenes computes all genes that commonly occur in all group and spits
-% saves the list as CSV in working directory or specified directory
+function preprocessdata(xlsPath,varargin)
+% preprocessdata removes missing data and cleans rows flooded with zeros.
 %--------------------------------------------------------------------------
 %
 % Usage:
 %-------
-% corrMat = commonGenes(dir,outPath)
+% corrMat = preprocessdata(dir,outPath)
 %
 % Required input:
 %----------------
-% 1. xlsPath: master excel sheet where the excel sheets are stored 
+% 1. xlsPath: master excel sheet where the excel sheets are stored
 %
 % Optional input:
 %----------------
+% 1. Scaling: Logical true or false to specify whether to z-score
+%             standardize the data
+%
 % 2. outPath: output directory to save CSV of pairwise correlations
 %             (defaults: current working directory; same name as input file)
 %
 % Output:
 %--------
-% geneVec: vector containing list of genes
 %
 % Author: Siddhartha Dhiman
 % Email: sdhiman@buffalo.edu & dhiman@musc.edu
 % Created with MATLAB 2019a
-disp('==================================================================');
-disp('                  Running commonGenes');
-disp('    Directory:');
-disp(sprintf('        %s',dir));
-disp('==================================================================');
 
 %% Parse Inputs
 tic;
-defaultR = 3;
-defaultC = 5;
+defaultScale = true;
 defaultOut = pwd;
 
 p = inputParser;
 p.addRequired('xlsPath',@isstr);
-p.addRequired('R',defaultR,@(x) rem(x,1)==0);
-p.addRequired('C',defaultC,@(x) rem(x,1)==0);
+p.addOptional('Scaling',false,@islogical)
 p.addOptional('OutPath',defaultOut,@isstr);
-p.addOptional('FillMissing',false,@islogical)
+
 
 parse(p,xlsPath,varargin{:});
 
@@ -64,31 +58,48 @@ if ~exist('outPath','var') || isempty(outPath)
     outPath = pwd;
 end
 
-% Check whether R is provided
-if ~exist('R','var') || isempty(R)
-    error('Please provide variable R for number of replicates');
-end
-
-% Check whether C is provided
-if ~exist('C','var') || isempty(C)
-    error('Please provide variable C for number of conditions');
-end
-
 %% Print Configuration
+if Scaling
+    scalingState = 'enabled';
+else
+    scalingState = 'disabled';
+end
+
 disp('==================================================================');
 disp('                  Running commonGenes');
 disp('    Target:');
 disp(sprintf('        %s',xlsPath));
 disp('    Variables:');
-disp(sprintf('         R = %d | C = %d',R,C));
+disp(sprintf('         Scaling is %s',scalingState));
 disp('==================================================================');
 
 %% Load Data File
-[num,txt,~] = xlsread(xlsPath);
+[num,txt,raw] = xlsread(xlsPath);
+num(:,1) = [];
 [~,fn,~] = fileparts(xlsPath);
-savePath = fullfile(outPath,'common_genes.csv');
+savePath = fullfile(outPath,[fn,'_clean.csv']);
 
+hdr = txt(1,:);
+hdr(1) = [];
 geneList = txt(2:end,2);
 
-if FillMissing
+%% Index Rows to Remove 
+[~,keepIdx1] = rmmissing(num); % Rows with missing data
+keepIdx2 = any(num,2);         % Rows not completely filled with zeros
+% Add the two indexes and make them logical
+keepIdx = logical(keepIdx1 + keepIdx2);
+
+%% Clean Gene List and Numbers and Scale
+geneList = geneList(keepIdx); num = num(keepIdx,:);
+
+if Scaling
+    num = normalize(num,2);
+end
     
+%% Join Data in Table and Write
+tab = cell2table(horzcat(geneList, num2cell(num)), 'VariableNames', hdr);
+writetable(tab,savePath);
+
+end % cleanData (main)
+
+
