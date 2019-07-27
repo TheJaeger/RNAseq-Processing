@@ -108,9 +108,6 @@ end
 geneList = geneList(idxNaN);
 num = num(idxNaN,:);
 
-%% Standardize Data (Entire Row)
-num = zscore(num,0,2);
-
 %% Form Independent Conditions
 %  R1 --> First condition
 %  R2 --> Second condition
