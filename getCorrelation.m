@@ -153,8 +153,8 @@ disp(sprintf('Correlations saved in %s',fullfile(savePath,strcat('corr-',fn,'.cs
 
 %% Plot Histograms
 %  Plotting colors
-c1 = [86,187,131]/255;   % condition 1 color
-c2 = [78,173,241]/255;   % condition 2 color
+c1 = [201,51,18]/255;   % condition 1 color
+c2 = [36,36,42]/255;   % condition 2 color
 c3 = [235,235,235]/255;  % background color
 
 %  Legend titles
@@ -188,9 +188,9 @@ for k = 1:length(nC2)
 end
 hold on;
 c1Area = plot(mC1,nC1,...
-    'Color',c1,'LineWidth',2);
+    'Color',c1,'LineWidth',1);
 c2Area = plot(mC2,nC2,...
-    'Color',c2,'LineWidth',2);
+    'Color',c2,'LineWidth',1);
 area(low_x,all_y,...
     'EdgeColor','none',...
     'FaceColor','red','FaceAlpha',0.05);
