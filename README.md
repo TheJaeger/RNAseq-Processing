@@ -4,7 +4,7 @@ A pipeline developed to process mRNA or miRNA data derived from RNA sequencing.
 ## Steps Performed
 The following steps were undertaken to generate all data:
 
-1. Run `preprocessdata` on __mRNA_master_list.xlsx__ to generate a cleaned master list named __mRNA_master_list_clean_scaled.xlsx__ using __All_Targets.xlsx__. This produces a master list that is scaled evenly across all conditions (C, N, +N, -TK), and includes at least 8 non-zeros for any given gene.
+1. Run `preprocessdata` on _mRNA_master_list.xlsx_ to generate a cleaned master list named _mRNA_master_list_clean_scaled.xlsx_ using _All_Targets.xlsx_. This produces a master list that is scaled evenly across all conditions (C, N, +N, -TK), and includes at least 8 non-zeros for any given gene.
 
     ```
     masterPath = 'D:\Datasets\RNAS-Seq\mRNA_master_list.xlsx';
@@ -18,17 +18,17 @@ The following steps were undertaken to generate all data:
     'OutputPath', masterOutPath);
     ```
 
-2. Open __mRNA_master_list_clean_scaled.xlsx__ and create pair-wise observations in the following categories:
+2. Open _mRNA_master_list_clean_scaled.xlsx_ and create pair-wise observations in the following categories:
 
     * C vs N
     * C vs CTK
     * N vs NTK
     * N vs NNLS
 
-    Then place them in another folder called __Triplicates_Cleaned__
+    Then place them in another folder called _Triplicates_Cleaned_
 
-3. Then run `getCorrelation` to generate pairwise correlation on groupd in folder __Triplicates_Cleaned__
+3. Then run `getCorrelation` to generate pairwise correlation on groupd in folder _Triplicates_Cleaned_
 
-4. Run ``specificCorrelation` to generate pairwise correlations and figures for GO group, using targets in __Targets__
+4. Run `specificCorrelation` to generate pairwise correlations and figures for GO group, using targets in _Targets_
 
 The file `Processing_Script.m` contains all these processing steps highlighted above.
