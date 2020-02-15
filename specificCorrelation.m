@@ -176,8 +176,8 @@ for idxSheet = 2:nSheets    %   Remove first index because it contains informati
     
     %% Plot Histograms
     %  Plotting colors
-    c1 = [86,187,131]/255;   % condition 1 color
-    c2 = [78,173,241]/255;   % condition 2 color
+    c1 = [201,51,18]/255;   % condition 1 color
+    c2 = [36,36,42]/255;   % condition 2 color
     c3 = [235,235,235]/255;  % background color
     
     %  Legend titles

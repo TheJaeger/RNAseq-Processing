@@ -8,12 +8,12 @@ function preprocessdata(xlsPath,varargin)
 %
 % Required input:
 %----------------
-% 1. xlsPath: master excel sheet where the excel sheets are stored
+% 1. xlsPath: master excel sheet
 %
 % Optional input:
 %----------------
 % 2. FilterList: Path to a list of predefined list for filtering.
-%                Triplicates will only be prduced for these genes
+%                Triplicates will only be produced for these genes
 %
 % 3. Scaling: Logical true or false to specify whether to z-score
 %             standardize the data
@@ -21,7 +21,7 @@ function preprocessdata(xlsPath,varargin)
 % 4. Threshold: Integer specifying how many non-zeros need to be present
 %               before a row is removed. Default: 1
 %
-% 5. outPath: output directory to save CSV of pairwise correlations
+% 5. OutputPath: output directory to save CSV of pairwise correlations
 %             (defaults: current working directory; same name as input file)
 %
 % Output:
@@ -42,11 +42,11 @@ p.addRequired('xlsPath',@isstr);
 p.addOptional('FilterList',@exists)
 p.addOptional('Scaling',false,@islogical);
 p.addOptional('Threshold',defaultTh,@(x) rem(x,1)==0);
-p.addOptional('OutPath',defaultOut,@isstr);
+p.addOptional('OutputPath',defaultOut,@isstr);
 
 parse(p,xlsPath,varargin{:});
 
-outPath = p.Results.OutPath;
+outPath = p.Results.OutputPath;
 
 %% Perform Checks
 %  Check for file existence
@@ -79,7 +79,7 @@ else
 end
 
 disp('==================================================================');
-disp('                  Running commonGenes');
+disp('                  Preprocessing Data');
 disp('    Target:');
 disp(sprintf('        %s',xlsPath));
 disp('    Variables:');
@@ -137,6 +137,7 @@ writetable(tab,savePath);
 disp(sprintf('%d genes out of %d removed',...
     nGenesA - nGenesB,...
     nGenesA));
+disp(sprintf('File saved as %s', savePath));
 toc;
 end % cleanData (main)
 

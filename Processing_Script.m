@@ -1,10 +1,20 @@
 clc; clear all; close all;
 
 %% Define Paths for Input and Output
+masterPath = 'D:\Datasets\RNAS-Seq\mRNA_master_list.xlsx';
+filterPath = 'D:\Datasets\RNAS-Seq\mRNA\Targets_Cleaned\All_Targets.xlsx';
+masterOutPath = 'D:\Datasets\RNAS-Seq\mRNA\Preprocessed_Master_List';
 inPath = 'D:\Datasets\RNAS-Seq\mRNA\Triplicates_Cleaned';
 targetPath = 'D:\Datasets\RNAS-Seq\mRNA\Targets';
-outPath = 'D:\SystemFiles\siddh\Downloads\RNA-Seq';
+outPath = 'D:\Datasets\RNAS-Seq\mRNA\Generated_Data';
 R = 3;
+
+%% Preprocess Data
+preprocessdata(masterPath,...
+    'FilterList', filterPath,...
+    'Scaling', true,...
+    'Threshold', 8,...
+    'OutputPath', masterOutPath);
 
 %% Start
 dirIn = dir(fullfile(inPath,'*.xlsx'));
