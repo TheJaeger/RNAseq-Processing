@@ -6,7 +6,7 @@ The following steps were undertaken to generate all data:
 
 1. Run `preprocessdata` on __mRNA_master_list.xlsx__ to generate a cleaned master list named __mRNA_master_list_clean_scaled.xlsx__ using __All_Targets.xlsx__. This produces a master list that is scaled evenly across all conditions (C, N, +N, -TK), and includes at least 8 non-zeros for any given gene.
 
-    '''
+    ```
     masterPath = 'D:\Datasets\RNAS-Seq\mRNA_master_list.xlsx';
     filterPath = 'D:\Datasets\RNAS-Seq\mRNA\Targets_Cleaned\All_Targets.xlsx';
     masterOutPath = 'D:\Datasets\RNAS-Seq\mRNA\Preprocessed_Master_List';
@@ -16,7 +16,7 @@ The following steps were undertaken to generate all data:
     'Scaling', true,...
     'Threshold', 8,...
     'OutputPath', masterOutPath);
-    '''
+    ```
 
 2. Open __mRNA_master_list_clean_scaled.xlsx__ and create pair-wise observations in the following categories:
 
